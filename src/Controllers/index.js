@@ -35,6 +35,7 @@ export const signin = async (req, res) => {
 
 export const createUser = async (req, res) => {
   await validateToken(req, res, async () => {
+    console.log("BODY", req.body)
     try {
       const { name, lastname, email, password } = req.body;
 
@@ -46,7 +47,7 @@ export const createUser = async (req, res) => {
       );
 
       if (rows.affectedRows !== 1) {
-        return res.json({ Error: 'error inserting user' });
+        return res.json({ Error: 'Error Inserting User' });
       }
 
       return res.json({ Error: null, message: `${rows.affectedRows} usuario creado` });
@@ -89,3 +90,20 @@ export const changePassword = async (req, res) => {
     }
   });
 };
+
+export const viewUsers = async (req, res) => {
+  await validateToken(req , res ,async () =>{
+    try{
+      const [rows] = await pool.query('SELECT * FROM users')
+
+      if (rows.length === 0) {
+        return res.json({ error: 'USERS NOT FOUND' })
+      }
+  
+      res.json({error: null , data: rows})
+    }catch(err){
+      res.json({ error: err.message})
+    }
+    
+  });
+}
