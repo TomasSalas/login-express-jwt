@@ -35,7 +35,6 @@ export const signin = async (req, res) => {
 
 export const createUser = async (req, res) => {
   await validateToken(req, res, async () => {
-    console.log("BODY", req.body)
     try {
       const { name, lastname, email, password } = req.body;
 
@@ -92,18 +91,23 @@ export const changePassword = async (req, res) => {
 };
 
 export const viewUsers = async (req, res) => {
-  await validateToken(req , res ,async () =>{
-    try{
-      const [rows] = await pool.query('SELECT * FROM users')
-
-      if (rows.length === 0) {
-        return res.json({ error: 'USERS NOT FOUND' })
-      }
+  try{
+    await validateToken(req , res ,async () =>{
+      try{
+        const [rows] = await pool.query('SELECT * FROM users')
   
-      res.json({error: null , data: rows})
-    }catch(err){
-      res.json({ error: err.message})
-    }
+        if (rows.length === 0) {
+          return res.json({ error: 'USERS NOT FOUND' })
+        }
     
-  });
-}
+        res.json({error: null , data: rows})
+      }catch(err){
+        res.json({ error: err.message})
+      }
+      
+    });
+  }catch(err){
+    res.json({ error: "access denied" })
+  }
+
+};
