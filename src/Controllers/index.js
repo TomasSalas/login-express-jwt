@@ -94,7 +94,30 @@ export const viewUsers = async (req, res) => {
   try{
     await validateToken(req , res ,async () =>{
       try{
-        const [rows] = await pool.query('SELECT * FROM users')
+        const [rows] = await pool.query('SELECT * FROM users where status = 1')
+  
+        if (rows.length === 0) {
+          return res.json({ error: 'USERS NOT FOUND' })
+        }
+    
+        res.json({error: null , data: rows})
+      }catch(err){
+        res.json({ error: err.message})
+      }
+      
+    });
+  }catch(err){
+    res.json({ error: "access denied" })
+  }
+
+};
+
+export const deleteUser = async (req, res) => {
+  console.log(req.body)
+  try{
+    await validateToken(req , res ,async () =>{
+      try{
+        const [rows] = await pool.query('UPDATE users SET status = 0 where id = ?', [req.body.id])
   
         if (rows.length === 0) {
           return res.json({ error: 'USERS NOT FOUND' })
