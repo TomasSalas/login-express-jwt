@@ -2,6 +2,7 @@ import { pool } from '../Config/db.js'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { validateToken } from '../Middleware/validarToken.js'
+import CryptoJS from 'crypto-js'
 
 export const signin = async (req, res) => {
   const { email, password } = req.body
@@ -21,17 +22,19 @@ export const signin = async (req, res) => {
 
   const payload = {
     sub: rows[0].id,
-    role: null,
+    role: rows[0].rol,
+    data: { 'name': rows[0].name, 'lastname': rows[0].lastname, 'email': rows[0].email },
   }
 
   const token = jwt.sign(payload, process.env.SECRET_TOKEN, { expiresIn: 60 * 10 })
 
+  let crypToken = CryptoJS.AES.encrypt(token, process.env.SECRET_TOKEN_CRYPTO).toString()
+
   res.json({
     error: null,
-    token: token,
-    data: { 'name': rows[0].name, 'lastname': rows[0].lastname, 'email': rows[0].email },
+    token: crypToken,
   })
-}
+};
 
 export const createUser = async (req, res) => {
   await validateToken(req, res, async () => {
@@ -113,7 +116,6 @@ export const viewUsers = async (req, res) => {
 };
 
 export const deleteUser = async (req, res) => {
-  console.log(req.body)
   try{
     await validateToken(req , res ,async () =>{
       try{
